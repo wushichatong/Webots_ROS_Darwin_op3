@@ -1,0 +1,9 @@
+<launch>
+<arg name="no-gui" default="false," doc="Start Webots with minimal GUI"/>
+<include file="$(find webots_ros)/launch/webots.launch">
+  <arg name="mode" value="realtime"/>
+  <arg name="no-gui" value="$(arg no-gui)"/>
+  <arg name="world" value="/home/instellar/Documents/Robotis-op3/darwin-op/worlds/robotis_op3.wbt"/>
+</include>
+
+</launch>
