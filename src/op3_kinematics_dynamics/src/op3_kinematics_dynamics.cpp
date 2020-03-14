@@ -1071,6 +1071,51 @@ bool OP3KinematicsDynamics::calcInverseKinematicsForLeftLeg(double *out, double 
     return false;
 }
 
+bool OP3KinematicsDynamics::calcInverseKinematicsForLeg(double *out, tf::Pose body_pose, tf::Pose left_foot,  tf::Pose right_foot)
+{
+  double right_leg_angle[6];
+  double left_leg_angle[6];
+
+  tf::Transform  temp_left_transform = body_pose.inverse() * left_foot;
+  tf::Transform  temp_right_transform = body_pose.inverse() * right_foot;
+//    tf::Transform  temp_left_transform = left_foot.inverse() * body_pose;
+//    tf::Transform  temp_right_transform = right_foot.inverse() * body_pose;
+  double roll, pitch, yaw;//定义存储r\p\y的容器
+  tf::Matrix3x3(temp_left_transform.getRotation()).getRPY(roll, pitch, yaw);//进行转换
+
+  std::cout<<"z:"<<temp_left_transform.getOrigin().z()<<std::endl;
+  if (calcInverseKinematicsForRightLeg(&right_leg_angle[0], temp_left_transform.getOrigin().x(),
+                                       temp_left_transform.getOrigin().y(),  temp_left_transform.getOrigin().z(),
+                                       roll, pitch, yaw) == false)
+  {
+    printf("1 IK not Solved EPR ");
+    return false;
+  }
+
+  tf::Matrix3x3(temp_right_transform.getRotation()).getRPY(roll, pitch, yaw);//进行转换
+  if (calcInverseKinematicsForLeftLeg(&left_leg_angle[0],  temp_right_transform.getOrigin().x(),
+                                      temp_right_transform.getOrigin().y(), temp_right_transform.getOrigin().z(),
+                                      roll, pitch, yaw) == false)
+  {
+    printf("2 IK not Solved EPR ");
+    return false;
+  }
+
+
+
+  for (int i=0; i<12; i++) {
+    if(i%2==0)
+      out[i] = right_leg_angle[i/2];
+    else {
+      out[i] = left_leg_angle[i/2];
+    }
+  }
+
+  return true;
+
+}
+
+
 LinkData *OP3KinematicsDynamics::getLinkData(const std::string link_name)
 {
   for (int ix = 0; ix <= ALL_JOINT_ID; ix++)

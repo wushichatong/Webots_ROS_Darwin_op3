@@ -19,4 +19,6 @@
   <depend>cmake_modules</depend>
   <depend>robotis_math</depend>
   <depend>eigen</depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf</depend>
 </package>

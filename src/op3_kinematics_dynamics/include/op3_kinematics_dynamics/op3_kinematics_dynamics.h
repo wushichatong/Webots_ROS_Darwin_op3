@@ -22,8 +22,11 @@
 #include <vector>
 #include <eigen3/Eigen/Eigen>
 
+#include <geometry_msgs/Pose.h>
+#include <tf/tf.h>
 #include "op3_kinematics_dynamics_define.h"
 #include "link_data.h"
+#include <iostream>
 
 namespace robotis_op
 {
@@ -33,6 +36,12 @@ enum TreeSelect
   Manipulation,
   Walking,
   WholeBody
+};
+
+enum Phase{
+  DOUBLE_SUPPORT,
+  LEFT_SUPPORT,
+  RIGHT_SUPPORT
 };
 
 class OP3KinematicsDynamics
@@ -73,6 +82,9 @@ class OP3KinematicsDynamics
                                         double yaw);
   bool calcInverseKinematicsForLeftLeg(double *out, double x, double y, double z, double roll, double pitch,
                                        double yaw);
+
+  bool calcInverseKinematicsForLeg(double *out, tf::Pose body_pose,
+                                   tf::Pose left_foot,  tf::Pose right_foot);
 
   LinkData *op3_link_data_[ ALL_JOINT_ID + 1];
 

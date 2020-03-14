@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   robotis_math
   cmake_modules
+  geometry_msgs
+  tf
 )
 
 find_package(Eigen3 REQUIRED)
@@ -33,7 +35,7 @@ find_package(Eigen3 REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp robotis_math cmake_modules
+  CATKIN_DEPENDS roscpp robotis_math cmake_modules geometry_msgs tf
   DEPENDS EIGEN3
 )
 

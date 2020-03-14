@@ -70,7 +70,7 @@ bool webots_interface::Read(double* angle){
     string sensorName = motorNames[i];
     sensorName.push_back('S');
 //    getPositionSensor(sensorName)->enable(mTimeStep);
-    cout<<getPositionSensor(sensorName)->getValue()<<endl;
+//    cout<<getPositionSensor(sensorName)->getValue()<<endl;
 //    cout<<angle[i];
   }
 
@@ -82,7 +82,7 @@ bool webots_interface::Write(double* angle){
     getMotor(sensorName)->setPosition(angle[i]);
   }
   step(mTimeStep);
-  cout<<"write succ"<<endl;
+//  cout<<"write succ"<<endl;
 
 }
 
