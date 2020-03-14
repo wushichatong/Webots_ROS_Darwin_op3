@@ -1071,20 +1071,20 @@ bool OP3KinematicsDynamics::calcInverseKinematicsForLeftLeg(double *out, double 
     return false;
 }
 
-bool OP3KinematicsDynamics::calcInverseKinematicsForLeg(double *out, tf::Pose body_pose, tf::Pose left_foot,  tf::Pose right_foot)
+bool OP3KinematicsDynamics::calcInverseKinematicsForLeg(double *out, tf::Pose body_pose, tf::Pose& left_foot,  tf::Pose& right_foot)
 {
   double right_leg_angle[6];
   double left_leg_angle[6];
 
-  tf::Transform  temp_left_transform = body_pose.inverse() * left_foot;
-  tf::Transform  temp_right_transform = body_pose.inverse() * right_foot;
+  tf::Pose  temp_left_transform = body_pose.inverse() * left_foot;
+  tf::Pose  temp_right_transform = body_pose.inverse() * right_foot;
 //    tf::Transform  temp_left_transform = left_foot.inverse() * body_pose;
 //    tf::Transform  temp_right_transform = right_foot.inverse() * body_pose;
   double roll, pitch, yaw;//定义存储r\p\y的容器
   tf::Matrix3x3(temp_left_transform.getRotation()).getRPY(roll, pitch, yaw);//进行转换
 
-  std::cout<<"z:"<<temp_left_transform.getOrigin().z()<<std::endl;
-  if (calcInverseKinematicsForRightLeg(&right_leg_angle[0], temp_left_transform.getOrigin().x(),
+
+  if (calcInverseKinematicsForLeftLeg(&left_leg_angle[0], temp_left_transform.getOrigin().x(),
                                        temp_left_transform.getOrigin().y(),  temp_left_transform.getOrigin().z(),
                                        roll, pitch, yaw) == false)
   {
@@ -1092,8 +1092,9 @@ bool OP3KinematicsDynamics::calcInverseKinematicsForLeg(double *out, tf::Pose bo
     return false;
   }
 
+//  std::cout<<"z:"<<temp_right_transform.getOrigin().z()<<std::endl;
   tf::Matrix3x3(temp_right_transform.getRotation()).getRPY(roll, pitch, yaw);//进行转换
-  if (calcInverseKinematicsForLeftLeg(&left_leg_angle[0],  temp_right_transform.getOrigin().x(),
+  if (calcInverseKinematicsForRightLeg(&right_leg_angle[0],  temp_right_transform.getOrigin().x(),
                                       temp_right_transform.getOrigin().y(), temp_right_transform.getOrigin().z(),
                                       roll, pitch, yaw) == false)
   {
@@ -1111,6 +1112,8 @@ bool OP3KinematicsDynamics::calcInverseKinematicsForLeg(double *out, tf::Pose bo
     }
   }
 
+  left_foot = temp_left_transform;
+  right_foot = temp_right_transform;
   return true;
 
 }
