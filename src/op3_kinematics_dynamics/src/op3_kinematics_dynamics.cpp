@@ -1071,7 +1071,7 @@ bool OP3KinematicsDynamics::calcInverseKinematicsForLeftLeg(double *out, double 
     return false;
 }
 
-bool OP3KinematicsDynamics::calcInverseKinematicsForLeg(double *out, tf::Pose body_pose, tf::Pose& left_foot,  tf::Pose& right_foot)
+bool OP3KinematicsDynamics::calcInverseKinematicsForLeg(double *out, tf::Pose& body_pose, tf::Pose& left_foot,  tf::Pose& right_foot)
 {
   double right_leg_angle[6];
   double left_leg_angle[6];

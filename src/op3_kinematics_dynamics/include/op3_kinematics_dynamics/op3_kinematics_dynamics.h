@@ -83,7 +83,7 @@ class OP3KinematicsDynamics
   bool calcInverseKinematicsForLeftLeg(double *out, double x, double y, double z, double roll, double pitch,
                                        double yaw);
 
-  bool calcInverseKinematicsForLeg(double *out, tf::Pose body_pose,
+  bool calcInverseKinematicsForLeg(double *out, tf::Pose& body_pose,
                                    tf::Pose& left_foot,  tf::Pose& right_foot);
 
   LinkData *op3_link_data_[ ALL_JOINT_ID + 1];

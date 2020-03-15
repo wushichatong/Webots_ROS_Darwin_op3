@@ -24,29 +24,8 @@ bool webots_interface::Init(){
 
 
     cout<<"init:"<<endl;
-//    wb_robot_init();
-
-//    time_step=1;
-
-//    //gait::MotorGaitApi::RHipPitchMotor
-//    // motor
-//    RHipYawMotor = wb_robot_get_device(motorNames[0]);
-//    wb_motor_enable_torque_feedback(RHipYawMotor, time_step);
-////    wb_position_sensor_enable(RHipYawMotor, time_step);
-////wb_position_sensor_enable()
-
-//    wb_motor_set_position(RHipYawMotor, 1);
-//    cout<<wb_motor_get_target_position(RHipYawMotor)<<endl;
-//    wb_robot_step(1);
-//    webots::Robot robot = new Robot();
-//    webots::Robot* robot = new webots::Robot();
     mTimeStep = getBasicTimeStep();
-//    cout<<"0 value:";
 
-//    webots::LED* headLed = getLED("HeadLed");
-//    headLed->set(0xFF00FF);
-//    step(mTimeStep);
-//    cout<<"2 value:"<<ShoulderRPositionSensor->getValue()<<endl;
 
     for (int i = 0; i < NMOTORS; i++) {
       string sensorName = motorNames[i];
