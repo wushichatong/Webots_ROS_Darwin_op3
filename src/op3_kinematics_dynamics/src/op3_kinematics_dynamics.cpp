@@ -1083,7 +1083,7 @@ bool OP3KinematicsDynamics::calcInverseKinematicsForLeg(double *out, tf::Pose bo
   double roll, pitch, yaw;//定义存储r\p\y的容器
   tf::Matrix3x3(temp_left_transform.getRotation()).getRPY(roll, pitch, yaw);//进行转换
 
-
+//std::cout<<"l: x, y:"<<yaw<<std::endl;
   if (calcInverseKinematicsForLeftLeg(&left_leg_angle[0], temp_left_transform.getOrigin().x(),
                                        temp_left_transform.getOrigin().y(),  temp_left_transform.getOrigin().z(),
                                        roll, pitch, yaw) == false)
@@ -1094,6 +1094,7 @@ bool OP3KinematicsDynamics::calcInverseKinematicsForLeg(double *out, tf::Pose bo
 
 //  std::cout<<"z:"<<temp_right_transform.getOrigin().z()<<std::endl;
   tf::Matrix3x3(temp_right_transform.getRotation()).getRPY(roll, pitch, yaw);//进行转换
+//    std::cout<<"r: yaw:"<<yaw<<std::endl;
   if (calcInverseKinematicsForRightLeg(&right_leg_angle[0],  temp_right_transform.getOrigin().x(),
                                       temp_right_transform.getOrigin().y(), temp_right_transform.getOrigin().z(),
                                       roll, pitch, yaw) == false)

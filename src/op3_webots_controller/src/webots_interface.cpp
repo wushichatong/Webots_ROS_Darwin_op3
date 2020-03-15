@@ -42,11 +42,7 @@ bool webots_interface::Init(){
 //    webots::Robot* robot = new webots::Robot();
     mTimeStep = getBasicTimeStep();
 //    cout<<"0 value:";
-//    webots::Motor* ShoulderRMotor = getMotor("ShoulderR");
-//    webots::PositionSensor* ShoulderRPositionSensor = ShoulderRMotor->getPositionSensor();
-//    ShoulderRPositionSensor->enable(mTimeStep);
-//    cout<<"1 value:"<<ShoulderRPositionSensor->getValue()<<endl;
-//    ShoulderRMotor->setPosition(1);
+
 //    webots::LED* headLed = getLED("HeadLed");
 //    headLed->set(0xFF00FF);
 //    step(mTimeStep);
@@ -58,7 +54,11 @@ bool webots_interface::Init(){
       sensorName.push_back('S');
       getPositionSensor(sensorName)->enable(mTimeStep);
     }
+    webots::Motor* ShoulderRMotor = getMotor("ArmUpperR");
+    ShoulderRMotor->setPosition(-M_PI/2);
 
+    webots::Motor* ShoulderLMotor = getMotor("ArmUpperL");
+    ShoulderLMotor->setPosition(M_PI/2);
     step(mTimeStep);
 
 

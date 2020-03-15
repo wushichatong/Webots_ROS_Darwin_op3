@@ -5,13 +5,19 @@ project(op3_webots_controller)
 # add_compile_options(-std=c++11)
 set(WEBOTS_INCLUDE_DIRS /usr/local/webots/include/controller/cpp)
 set(WEBOTS_LIBS_DIRS /usr/local/webots/lib/controller)
+#List to make rest of code more readable
+set( MESSAGE_DEPENDENCIES std_msgs geometry_msgs actionlib_msgs)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
     roscpp
     sensor_msgs
-    op3_kinematics_dynamics)
+    op3_kinematics_dynamics
+    COMPONENTS
+    message_generation
+    ${MESSAGE_DEPENDENCIES})
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -53,6 +59,9 @@ find_package(catkin REQUIRED
 #   Message2.msg
 # )
 
+#Add message files
+add_message_files(DIRECTORY msg FILES Footstep.msg FootstepSeries.msg)
+
 ## Generate services in the 'srv' folder
 # add_service_files(
 #   FILES
@@ -72,7 +81,8 @@ find_package(catkin REQUIRED
 #   DEPENDENCIES
 #   std_msgs  # Or other packages containing msgs
 # )
-
+#And now generate the messages
+generate_messages(DEPENDENCIES ${MESSAGE_DEPENDENCIES})
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -102,13 +112,14 @@ find_package(catkin REQUIRED
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES op3_webots_controller
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
-)
-
+#catkin_package(
+##  INCLUDE_DIRS include
+##  LIBRARIES op3_webots_controller
+##  CATKIN_DEPENDS other_catkin_pkg
+##  DEPENDS system_lib
+#)
+# Generate catkin/pkg-config import information
+catkin_package( CATKIN_DEPENDS message_runtime ${MESSAGE_DEPENDENCIES} )
 ###########
 ## Build ##
 ###########
@@ -176,6 +187,11 @@ link_directories(
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
+
+catkin_install_python(PROGRAMS
+   scripts/teleop_keyboard.py
+   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
