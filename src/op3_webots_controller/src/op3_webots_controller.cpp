@@ -43,7 +43,7 @@ bool op3_webots_controller::parseJointNameFromYaml(const std::string &path)
 
     joint_id = _it->first.as<int>();
     joint_name = _it->second.as<std::string>();
-    joint_names_.push_back(joint_name);
+    joint_names_[joint_id] = joint_name;
 
     if (debug_)
       std::cout << "ID : " << joint_id << " - " << joint_name << std::endl;
@@ -98,7 +98,7 @@ void op3_webots_controller::process(){
 
 }
 bool op3_webots_controller::init(){
-  for(size_t joint_index = 0; joint_index < joint_names_.size(); joint_index++){
+  for(size_t joint_index = 1; joint_index <= joint_names_.size(); joint_index++){
     string joint_name = joint_names_[joint_index];
     string joint_sensor_name = joint_name + "S";
     joint_motor_map_[joint_name] = getMotor(joint_name);
@@ -114,6 +114,7 @@ bool op3_webots_controller::init(){
 bool op3_webots_controller::writeAllMotors(const sensor_msgs::JointState::ConstPtr &joint_desired_state){
   for(size_t joint_index = 0; joint_index < joint_desired_state->name.size(); joint_index++){
     string joint_name = joint_desired_state->name[joint_index];
+    ROS_INFO("%s recieved", joint_name.c_str());
     double joint_position = joint_desired_state->position[joint_index];
     joint_motor_map_[joint_name]->setPosition(joint_position);
   }
@@ -127,7 +128,7 @@ bool op3_webots_controller::writeSingleMotor(const std::string& joint_name, doub
 }
 bool op3_webots_controller::readAllMotors(sensor_msgs::JointState& joint_present_state,
                                           sensor_msgs::JointState& joint_target_state){
-  for(size_t joint_index = 0; joint_index < joint_names_.size(); joint_index++){
+  for(size_t joint_index = 1; joint_index <= joint_names_.size(); joint_index++){
     string joint_name = joint_names_[joint_index];
     string joint_sensor_name = joint_name + "S";
 
@@ -152,7 +153,7 @@ double op3_webots_controller::readSingleMotor(const string& joint_sensor_name){
 
 void op3_webots_controller::setJointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg)
 {
-  ROS_INFO("recieve");
+//  ROS_INFO("recieve");
   writeAllMotors(msg);
 }
 

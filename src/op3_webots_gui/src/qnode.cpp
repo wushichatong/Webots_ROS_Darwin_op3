@@ -31,7 +31,7 @@ QNode::QNode(int argc, char** argv ) :
   init_argc(argc),
   init_argv(argv)
 {
-  debug_ = false;
+  debug_ = true;
   init();
 }
 
@@ -83,7 +83,7 @@ bool QNode::parseJointNameFromYaml(const std::string &path)
 
     joint_id = _it->first.as<int>();
     joint_name = _it->second.as<std::string>();
-    joint_names_.push_back(joint_name);
+    joint_names_[joint_id] = joint_name;
 
     if (debug_)
       std::cout << "ID : " << joint_id << " - " << joint_name << std::endl;
@@ -94,16 +94,20 @@ int QNode::getJointSize(){
   return joint_names_.size();
 }
 std::string QNode::getJointNameFromIndex(int joint_index){
-  if(joint_index < 0 || joint_index > joint_names_.size()){
+  if(joint_index < 1 || joint_index > joint_names_.size()){
     ROS_ERROR("joint index[%d] out of index ", joint_index);
     return "";
   }
   return joint_names_[size_t(joint_index)];
 }
 void QNode::sendJointValue(int joint_index, double joint_value){
+  if(joint_names_.find(joint_index) == joint_names_.end()){
+    ROS_ERROR("sendJointValue index error");
+    return ;
+  }
   sensor_msgs::JointState desired_joint_state;
   desired_joint_state.name.push_back(joint_names_[(size_t)joint_index]);
-  desired_joint_state.position.push_back(joint_value);
+  desired_joint_state.position.push_back(joint_value  * M_PI / 180);
   desired_joint_state.velocity.push_back(0);
   desired_joint_state.effort.push_back(0);
   desired_joint_state_pub_.publish(desired_joint_state);

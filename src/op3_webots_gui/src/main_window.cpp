@@ -48,8 +48,6 @@ MainWindow::~MainWindow() {}
 
 
 void MainWindow::initJointSliders(){
-
-  ROS_INFO("hews");
   // joints
   QGridLayout *grid_layout = new QGridLayout;
   QSignalMapper *signalMapper = new QSignalMapper(this);
@@ -57,8 +55,8 @@ void MainWindow::initJointSliders(){
   for (int ix = 0; ix < qnode.getJointSize(); ix++)
   {
     std::stringstream label_stream;
-    std::string joint_name = qnode.getJointNameFromIndex(ix);
-
+    std::string joint_name = qnode.getJointNameFromIndex(ix + 1);
+//    std::string joint_name = ix + " ";
     QLabel *id_label = new QLabel(tr(joint_name.c_str()));
 
 
@@ -78,7 +76,6 @@ void MainWindow::initJointSliders(){
     grid_layout->addWidget(id_label, num_row, num_col, 1, 1);
     grid_layout->addWidget(slider, num_row, num_col + 1, 1, 2);
   }
-
   QObject::connect(signalMapper, SIGNAL(mapped(QWidget *)), this, SLOT(setJointAngle(QWidget *)));
   ui.widget->setLayout(grid_layout);
 }
@@ -92,7 +89,7 @@ void MainWindow::setJointAngle(QWidget *widget)
   if(list.size() >= 2){
     int joint_index = list[1].toInt();
     qnode.sendJointValue(joint_index, slider->value());
-    ROS_INFO("send joint [%d] value: %d", joint_index,slider->value());
+    ROS_INFO("send joint [%d] value: %d", joint_index, slider->value());
   }
 
 }

@@ -41,7 +41,7 @@ private:
   bool stop_timer_;
   bool is_timer_running_;
   double time_step_;
-  std::vector<std::string> joint_names_;
+  std::map<int, std::string> joint_names_;
   std::map<std::string, webots::Motor*> joint_motor_map_;
   std::map<std::string, webots::PositionSensor*> joint_sensor_map_;
   bool debug_;

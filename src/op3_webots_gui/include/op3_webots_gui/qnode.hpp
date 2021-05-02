@@ -63,7 +63,7 @@ Q_SIGNALS:
 private:
     int init_argc;
     char** init_argv;
-    std::vector<std::string> joint_names_;
+    std::map<int, std::string> joint_names_;
     bool debug_;
 
     ros::Publisher desired_joint_state_pub_;
