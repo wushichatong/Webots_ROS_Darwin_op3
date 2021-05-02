@@ -9,7 +9,7 @@ int main(int argc, char **argv)
   controller.init();
   controller.startTimer();
   while(ros::ok()){
-
+    ros::spinOnce();
   }
   controller.stopTimer();
 

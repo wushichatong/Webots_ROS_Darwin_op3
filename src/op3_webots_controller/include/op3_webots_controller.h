@@ -31,9 +31,9 @@ public:
   bool readAllMotors(sensor_msgs::JointState& joint_present_state,
                      sensor_msgs::JointState& joint_target_state);
   double readSingleMotor(const std::string& joint_sensor_name);
-  bool writeAllMotors(sensor_msgs::JointState& joint_desired_state);
+  bool writeAllMotors(const sensor_msgs::JointState::ConstPtr &joint_desired_state);
   bool writeSingleMotor(const std::string& joint_name, double joint_value);
-
+  void setJointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg);
 private:
   void webotsTimerThread();
   void process();
@@ -46,8 +46,9 @@ private:
   std::map<std::string, webots::PositionSensor*> joint_sensor_map_;
   bool debug_;
 
-  ros::Publisher current_module_pub_;
+  ros::Subscriber joint_states_sub_;
 
+  ros::Publisher current_module_pub_;
   ros::Publisher goal_joint_state_pub_;
   ros::Publisher present_joint_state_pub_;
 };
