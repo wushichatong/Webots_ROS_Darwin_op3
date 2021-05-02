@@ -1,23 +1,22 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(op3_webots_controller)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
+
 set(WEBOTS_INCLUDE_DIRS /usr/local/webots/include/controller/cpp)
 set(WEBOTS_LIBS_DIRS /usr/local/webots/lib/controller)
-#List to make rest of code more readable
-set( MESSAGE_DEPENDENCIES std_msgs geometry_msgs actionlib_msgs)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED
-    roscpp
-    sensor_msgs
-    op3_kinematics_dynamics
-    COMPONENTS
-    message_generation
-    ${MESSAGE_DEPENDENCIES})
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  sensor_msgs
+  op3_kinematics_dynamics
+  robotis_controller_msgs
+  roslib
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -59,9 +58,6 @@ find_package(catkin REQUIRED
 #   Message2.msg
 # )
 
-#Add message files
-add_message_files(DIRECTORY msg FILES Footstep.msg FootstepSeries.msg)
-
 ## Generate services in the 'srv' folder
 # add_service_files(
 #   FILES
@@ -81,8 +77,7 @@ add_message_files(DIRECTORY msg FILES Footstep.msg FootstepSeries.msg)
 #   DEPENDENCIES
 #   std_msgs  # Or other packages containing msgs
 # )
-#And now generate the messages
-generate_messages(DEPENDENCIES ${MESSAGE_DEPENDENCIES})
+
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -112,14 +107,16 @@ generate_messages(DEPENDENCIES ${MESSAGE_DEPENDENCIES})
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-#catkin_package(
-##  INCLUDE_DIRS include
-##  LIBRARIES op3_webots_controller
-##  CATKIN_DEPENDS other_catkin_pkg
-##  DEPENDS system_lib
-#)
-# Generate catkin/pkg-config import information
-catkin_package( CATKIN_DEPENDS message_runtime ${MESSAGE_DEPENDENCIES} )
+catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES op3_webots_controller
+  CATKIN_DEPENDS
+  roscpp
+  sensor_msgs
+  op3_kinematics_dynamics
+#  DEPENDS system_lib
+)
+
 ###########
 ## Build ##
 ###########
@@ -131,6 +128,7 @@ include_directories(
  ${catkin_INCLUDE_DIRS}
  ${WEBOTS_INCLUDE_DIRS}
 )
+
 link_directories(
   ${catkin_LIB_DIRS}
   ${WEBOTS_LIBS_DIRS}
@@ -144,16 +142,14 @@ link_directories(
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME}_node
-#     ${${PROJECT_NAME}_EXPORTED_TARGETS}
-#     ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
  add_executable(${PROJECT_NAME}_node
-     src/motion_control_node.cpp
-     src/webots_interface.cpp)
+     src/webots.cpp
+     src/op3_webots_controller.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -168,11 +164,10 @@ link_directories(
 ## Specify libraries to link a library or executable target against
  target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
-   #Controller
+   yaml-cpp
    CppController
+
  )
-
-
 
 #############
 ## Install ##
@@ -183,15 +178,10 @@ link_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
+# catkin_install_python(PROGRAMS
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
-
-catkin_install_python(PROGRAMS
-   scripts/teleop_keyboard.py
-   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
