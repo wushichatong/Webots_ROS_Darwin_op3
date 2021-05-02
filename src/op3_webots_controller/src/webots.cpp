@@ -7,6 +7,11 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   robotis_op::op3_webots_controller controller;
   controller.init();
+  controller.startTimer();
+  while(ros::ok()){
+
+  }
+  controller.stopTimer();
 
   ROS_INFO("Hello world!");
 }
