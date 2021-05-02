@@ -14,7 +14,7 @@
    <string>OP3 Demo</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../resources/images.qrc">
+   <iconset>
     <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
   </property>
   <property name="locale">
@@ -129,7 +129,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="tab_mode">
           <attribute name="title">
@@ -1133,8 +1133,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>98</width>
-                <height>28</height>
+                <width>684</width>
+                <height>734</height>
                </rect>
               </property>
              </widget>
@@ -1367,9 +1367,7 @@
   <tabstop>head_center_button</tabstop>
   <tabstop>scrollArea</tabstop>
  </tabstops>
- <resources>
-  <include location="../resources/images.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>action_Quit</sender>
@@ -1453,7 +1451,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="buttonGroup_balance"/>
   <buttongroup name="buttonGroup_move_aim_on"/>
+  <buttongroup name="buttonGroup_balance"/>
  </buttongroups>
 </ui>

@@ -18,8 +18,7 @@ op3_webots_controller::op3_webots_controller()
   joint_states_sub_   = ros_node.subscribe("/robotis/set_joint_states", 10,
                                                                &op3_webots_controller::setJointStatesCallback, this);
   // Config
-  std::string default_config_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/joint_config.yaml";
-  std::string config_path = ros_node.param<std::string>("gui_config", default_config_path);
+  std::string config_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/joints_config.yaml";
   parseJointNameFromYaml(config_path);
 }
 
