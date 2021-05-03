@@ -10,6 +10,8 @@
 #include <map>
 
 #include "robotis_controller_msgs/JointCtrlModule.h"
+#include "op3_walking_module/op3_walking_module.h"
+#include "motion_module.h"
 #include "ros/ros.h"
 #include "sensor_msgs/JointState.h"
 #include <ros/package.h>
@@ -31,7 +33,7 @@ public:
   bool readAllMotors(sensor_msgs::JointState& joint_present_state,
                      sensor_msgs::JointState& joint_target_state);
   double readSingleMotor(const std::string& joint_sensor_name);
-  bool writeAllMotors(const sensor_msgs::JointState::ConstPtr &joint_desired_state);
+  bool writeAllMotors(const sensor_msgs::JointState &joint_desired_state);
   bool writeSingleMotor(const std::string& joint_name, double joint_value);
   void setJointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg);
 private:
@@ -41,10 +43,13 @@ private:
   bool stop_timer_;
   bool is_timer_running_;
   double time_step_;
+  int control_cycle_msec_;
   std::map<int, std::string> joint_names_;
   std::map<std::string, webots::Motor*> joint_motor_map_;
   std::map<std::string, webots::PositionSensor*> joint_sensor_map_;
   bool debug_;
+
+  robotis_framework::MotionModule* motionModule_;
 
   ros::Subscriber joint_states_sub_;
 
