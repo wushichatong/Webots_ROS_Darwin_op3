@@ -36,6 +36,7 @@ public:
   bool writeAllMotors(const sensor_msgs::JointState &joint_desired_state);
   bool writeSingleMotor(const std::string& joint_name, double joint_value);
   void setJointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg);
+  void initPoseMsgCallback(const std_msgs::String::ConstPtr& msg);
 private:
   void webotsTimerThread();
   void process();
@@ -52,6 +53,7 @@ private:
   robotis_framework::MotionModule* motionModule_;
 
   ros::Subscriber joint_states_sub_;
+  ros::Subscriber ini_pose_msg_sub_;
 
   ros::Publisher current_module_pub_;
   ros::Publisher goal_joint_state_pub_;

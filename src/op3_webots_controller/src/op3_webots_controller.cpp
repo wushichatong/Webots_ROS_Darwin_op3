@@ -20,12 +20,16 @@ op3_webots_controller::op3_webots_controller()
 
   joint_states_sub_   = ros_node.subscribe("/robotis/set_joint_states", 10,
                                                                &op3_webots_controller::setJointStatesCallback, this);
+  /* subscribe topics */
+  ini_pose_msg_sub_ = ros_node.subscribe("/robotis/base/ini_pose", 10,
+                                                        &op3_webots_controller::initPoseMsgCallback,this);
+
   // Config
   std::string config_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/joints_config.yaml";
   parseJointNameFromYaml(config_path);
 
   motionModule_->initialize(joint_names_, control_cycle_msec_);
-  motionModule_->setModuleEnable(true);
+
 }
 
 bool op3_webots_controller::parseJointNameFromYaml(const std::string &path)
@@ -173,6 +177,15 @@ void op3_webots_controller::setJointStatesCallback(const sensor_msgs::JointState
 {
 //  ROS_INFO("recieve");
   writeAllMotors(*msg);
+}
+void op3_webots_controller::initPoseMsgCallback(const std_msgs::String::ConstPtr& msg){
+
+  if (msg->data == "ini_pose")
+  {
+    ROS_INFO("init pose");
+    motionModule_->setModuleEnable(true);
+  }
+  return;
 }
 
 }
