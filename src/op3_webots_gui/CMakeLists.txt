@@ -13,6 +13,7 @@ project(op3_webots_gui)
 find_package(catkin REQUIRED COMPONENTS
     qt_build
     roscpp
+    op3_walking_module_msgs
     roslib)
 include_directories(${catkin_INCLUDE_DIRS})
 # Use this to define what the package will export (e.g. libs, headers).

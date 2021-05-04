@@ -64,6 +64,12 @@ void WalkingModule::initialize(std::map<int, std::string>& joint_names_, const i
   joint_table_["ShoulderR"] = 12;
   joint_table_["ShoulderL"] = 13;
 
+  joint_table_["ArmUpperR"] = 14;
+  joint_table_["ArmUpperL"] = 15;
+  joint_table_["ArmLowerR"] = 16;
+  joint_table_["ArmLowerL"] = 17;
+  joint_table_["Neck"] = 18;
+  joint_table_["Head"] = 19;
 
   target_position_ = Eigen::MatrixXd::Zero(1, long(joint_names_.size()));
   goal_position_ = Eigen::MatrixXd::Zero(1, long(joint_names_.size()));
@@ -88,9 +94,9 @@ void WalkingModule::initialize(std::map<int, std::string>& joint_names_, const i
   walking_param_.dsp_ratio = 0.1f;
   walking_param_.step_fb_ratio = 0.28f;
   // walking
-  walking_param_.x_move_amplitude = 0.0f;
-  walking_param_.y_move_amplitude = 0.0f;
-  walking_param_.z_move_amplitude = 0.040f;    // foot height
+  walking_param_.x_move_amplitude = 0.00f;
+  walking_param_.y_move_amplitude = 0.00f;
+  walking_param_.z_move_amplitude = 0.010f;    // foot height
   walking_param_.angle_move_amplitude = 0.0f;
   // balance
   walking_param_.balance_enable = false;
@@ -98,7 +104,7 @@ void WalkingModule::initialize(std::map<int, std::string>& joint_names_, const i
   walking_param_.balance_knee_gain = 0.3f;
   walking_param_.balance_ankle_roll_gain = 1.0f;
   walking_param_.balance_ankle_pitch_gain = 0.9f;
-  walking_param_.y_swap_amplitude = 0.020f;
+  walking_param_.y_swap_amplitude = 0.120f;
   walking_param_.z_swap_amplitude = 0.005f;
   walking_param_.pelvis_offset = 3.0f * DEGREE2RADIAN;
   walking_param_.arm_swing_gain = 1.5f;
@@ -121,16 +127,16 @@ void WalkingModule::initialize(std::map<int, std::string>& joint_names_, const i
   ctrl_running_ = false;
   real_running_ = false;
   time_ = 0;
-  //                     R_HIP_YAW, R_HIP_ROLL, R_HIP_PITCH, R_KNEE, R_ANKLE_PITCH, R_ANKLE_ROLL,
-  //                     L_HIP_YAW, L_HIP_ROLL, L_HIP_PITCH, L_KNEE, L_ANKLE_PITCH, L_ANKLE_ROLL,
-  //                     R_ARM_SWING, L_ARM_SWING, ....
+  //                     R_HIP_YAW,   R_HIP_ROLL , R_HIP_PITCH, R_KNEE   , R_ANKLE_PITCH, R_ANKLE_ROLL,
+  //                     L_HIP_YAW,   L_HIP_ROLL , L_HIP_PITCH, L_KNEE   , L_ANKLE_PITCH, L_ANKLE_ROLL,
+  //                     R_ARM_SWING, L_ARM_SWING, ArmUpperR  , ArmUpperL, ArmLowerR    , ArmLowerL
   joint_axis_direction_ <<      -1,         -1,          -1,     -1,             1,            1,
                                 -1,         -1,           1,      1,            -1,            1,
-                                 1,         -1,           1,      1,            -1,            1,
+                                 1,         -1,           1,      -1,            -1,            1,
                                  1,          1;
   init_position_        <<     0.0,      0.0,       0.0,    0.0,        0.0,       0.0,
                                0.0,      0.0,       0.0,    0.0,        0.0,       0.0,
-                               5.0,     -5.0,       0.0,    0.0,        0.0,       0.0,
+                               5.0,     -5.0,     -85.0,   85.0,        0.0,       0.0,
                                0.0,      0.0;
   init_position_ *= DEGREE2RADIAN;
   ros::NodeHandle ros_node;
@@ -204,7 +210,7 @@ void WalkingModule::walkingCommandCallback(const std_msgs::String::ConstPtr &msg
 
 void WalkingModule::walkingParameterCallback(const op3_walking_module_msgs::WalkingParam::ConstPtr &msg)
 {
-  walking_param_ = *msg;  
+  walking_param_ = *msg;
 }
 
 bool WalkingModule::getWalkigParameterCallback(op3_walking_module_msgs::GetWalkingParam::Request &req,
@@ -313,7 +319,7 @@ void WalkingModule::updateTimeParam()
 
   x_swap_period_time_ = period_time_ / 2;
   x_move_period_time_ = period_time_ * ssp_ratio_;
-  y_swap_period_time_ = period_time_;
+  y_swap_period_time_ = period_time_ / 2;
   y_move_period_time_ = period_time_ * ssp_ratio_;
   z_swap_period_time_ = period_time_ / 2;
   z_move_period_time_ = period_time_ * ssp_ratio_ / 2;
@@ -352,7 +358,8 @@ void WalkingModule::updateMovementParam()
     y_move_amplitude_shift_ = y_move_amplitude_;
   else
     y_move_amplitude_shift_ = -y_move_amplitude_;
-  y_swap_amplitude_ = walking_param_.y_swap_amplitude + y_move_amplitude_shift_ * 0.04;
+
+  y_swap_amplitude_ = walking_param_.y_swap_amplitude + y_move_amplitude_shift_ * 0.4;
 
   z_move_amplitude_ = walking_param_.z_move_amplitude / 2;
   z_move_amplitude_shift_ = z_move_amplitude_ / 2;
@@ -386,7 +393,7 @@ void WalkingModule::updatePoseParam()
   r_offset_ = walking_param_.init_roll_offset;
   p_offset_ = walking_param_.init_pitch_offset;
   a_offset_ = walking_param_.init_yaw_offset;
-  hit_pitch_offset_ = walking_param_.hip_pitch_offset;
+  hip_pitch_offset_ = walking_param_.hip_pitch_offset;
 }
 
 void WalkingModule::startWalking()
@@ -487,6 +494,9 @@ void WalkingModule::process(sensor_msgs::JointState& present_joints_state,
         err_max = err;
       err_total += err;
     }
+    for(int idx = 14; idx < 20; idx++){
+      target_position_.coeffRef(0, idx) = init_position_.coeff(0, idx);
+    }
 
 
     // Check Enable
@@ -496,8 +506,8 @@ void WalkingModule::process(sensor_msgs::JointState& present_joints_state,
         std::cout << "Check Err : " << err_max << std::endl;
 
       // make trajecotry for init pose
-      int mov_time = err_max / 300;
-      iniPoseTraGene(mov_time < 1 ? 1 : mov_time);
+      int mov_time = err_max / 800;
+      iniPoseTraGene(mov_time < 0.5 ? 0.5 : mov_time);
 
 
       // set target to goal
@@ -512,7 +522,7 @@ void WalkingModule::process(sensor_msgs::JointState& present_joints_state,
       ROS_WARN_STREAM_COND(DEBUG, "pitch_offset: " << walking_param_.init_pitch_offset * RADIAN2DEGREE);
       ROS_WARN_STREAM_COND(DEBUG, "yaw_offset: " << walking_param_.init_yaw_offset * RADIAN2DEGREE);
       ROS_WARN_STREAM_COND(DEBUG, "hip_pitch_offset: " << walking_param_.hip_pitch_offset * RADIAN2DEGREE);
-      ROS_WARN_STREAM_COND(DEBUG, "period_time: " << walking_param_.period_time * 1000);
+      ROS_WARN_STREAM_COND(DEBUG, "period_time: ms" << walking_param_.period_time * 1000);
       ROS_WARN_STREAM_COND(DEBUG, "dsp_ratio: " << walking_param_.dsp_ratio);
       ROS_WARN_STREAM_COND(DEBUG, "step_forward_back_ratio: " << walking_param_.step_fb_ratio);
       ROS_WARN_STREAM_COND(DEBUG, "foot_height: " << walking_param_.z_move_amplitude);
@@ -537,6 +547,7 @@ void WalkingModule::process(sensor_msgs::JointState& present_joints_state,
   desired_joints_state_.position.clear();
   desired_joints_state_.velocity.clear();
   desired_joints_state_.effort.clear();
+  desired_joints_state_.header.stamp = ros::Time::now();
   // set result
   for (size_t index = 0; index < present_joints_state.name.size(); index++)
   {
@@ -545,7 +556,6 @@ void WalkingModule::process(sensor_msgs::JointState& present_joints_state,
     desired_joints_state_.velocity.push_back(0.0);
     desired_joints_state_.effort.push_back(0.0);
     if(joint_table_.count(joint_name)){
-
       int joint_index = joint_table_[joint_name];
       desired_joints_state_.position.push_back(target_position_.coeff(0, joint_index));
     }else{
@@ -555,7 +565,7 @@ void WalkingModule::process(sensor_msgs::JointState& present_joints_state,
   }
 
   // time
-  if (real_running_ == true)
+  if (real_running_ == true && walking_state_ == WalkingReady)
   {
     time_ += time_unit;
     if (time_ >= period_time_)
@@ -628,23 +638,29 @@ bool WalkingModule::computeLegAngle(double *leg_angle)
 {
   Pose3D swap, right_leg_move, left_leg_move;
   double pelvis_offset_r, pelvis_offset_l;
-  double ep[12];
+  double ep[12];// left and right leg position
 
   updatePoseParam();
 
   // Compute endpoints
   swap.x = wSin(time_, x_swap_period_time_, x_swap_phase_shift_, x_swap_amplitude_, x_swap_amplitude_shift_);
-  swap.y = wSin(time_, y_swap_period_time_, y_swap_phase_shift_, y_swap_amplitude_, y_swap_amplitude_shift_);
   swap.z = wSin(time_, z_swap_period_time_, z_swap_phase_shift_, z_swap_amplitude_, z_swap_amplitude_shift_);
   swap.roll = 0.0;
   swap.pitch = 0.0;
   swap.yaw = 0.0;
+  static bool is_from_end = false;
 
   if (time_ <= l_ssp_start_time_)
   {
+
+//    ROS_INFO_THROTTLE(1.5, "dsp ->l ssp: %f y_swap_amplitude_: %f", l_ssp_start_time_, y_swap_amplitude_);
+
+    swap.y = wSin(time_, l_ssp_start_time_ * 4, y_swap_phase_shift_, y_swap_amplitude_, y_swap_amplitude_shift_);
+
     left_leg_move.x = wSin(l_ssp_start_time_, x_move_period_time_,
                            x_move_phase_shift_ + 2 * M_PI / x_move_period_time_ * l_ssp_start_time_, x_move_amplitude_,
                            x_move_amplitude_shift_);
+
     left_leg_move.y = wSin(l_ssp_start_time_, y_move_period_time_,
                            y_move_phase_shift_ + 2 * M_PI / y_move_period_time_ * l_ssp_start_time_, y_move_amplitude_,
                            y_move_amplitude_shift_);
@@ -671,6 +687,8 @@ bool WalkingModule::computeLegAngle(double *leg_angle)
   }
   else if (time_ <= l_ssp_end_time_)
   {
+    swap.y = y_swap_amplitude_;
+//    ROS_INFO_THROTTLE(0.5, "l ssp: %f", l_ssp_end_time_);
     left_leg_move.x = wSin(time_, x_move_period_time_,
                            x_move_phase_shift_ + 2 * M_PI / x_move_period_time_ * l_ssp_start_time_, x_move_amplitude_,
                            x_move_amplitude_shift_);
@@ -704,6 +722,9 @@ bool WalkingModule::computeLegAngle(double *leg_angle)
   }
   else if (time_ <= r_ssp_start_time_)
   {
+    swap.y = wSin(time_ - l_ssp_end_time_, (r_ssp_start_time_ - l_ssp_end_time_) * 2,
+                  y_swap_phase_shift_ - M_PI / 2.0, y_swap_amplitude_, y_swap_amplitude_shift_);
+//    ROS_INFO_THROTTLE(1.5, "dsp -> r ssp: %f", r_ssp_start_time_);
     left_leg_move.x = wSin(l_ssp_end_time_, x_move_period_time_,
                            x_move_phase_shift_ + 2 * M_PI / x_move_period_time_ * l_ssp_start_time_, x_move_amplitude_,
                            x_move_amplitude_shift_);
@@ -733,6 +754,8 @@ bool WalkingModule::computeLegAngle(double *leg_angle)
   }
   else if (time_ <= r_ssp_end_time_)
   {
+    swap.y = -y_swap_amplitude_;
+//    ROS_INFO_THROTTLE(1.5, "r ssp: %f", r_ssp_end_time_);
     left_leg_move.x = wSin(time_, x_move_period_time_,
                            x_move_phase_shift_ + 2 * M_PI / x_move_period_time_ * r_ssp_start_time_ + M_PI,
                            x_move_amplitude_, x_move_amplitude_shift_);
@@ -766,6 +789,10 @@ bool WalkingModule::computeLegAngle(double *leg_angle)
   }
   else
   {
+    swap.y = wSin(time_ - r_ssp_end_time_, (period_time_  - r_ssp_end_time_) * 4,
+                  y_swap_phase_shift_ + M_PI / 2.0, y_swap_amplitude_, y_swap_amplitude_shift_);
+    is_from_end = true;
+//    ROS_INFO_THROTTLE(1.5, "r ssp->dsp: %f ", time_ - r_ssp_end_time_);
     left_leg_move.x = wSin(r_ssp_end_time_, x_move_period_time_,
                            x_move_phase_shift_ + 2 * M_PI / x_move_period_time_ * r_ssp_start_time_ + M_PI,
                            x_move_amplitude_, x_move_amplitude_shift_);
@@ -794,6 +821,11 @@ bool WalkingModule::computeLegAngle(double *leg_angle)
     pelvis_offset_r = 0;
   }
 
+  ROS_INFO("walking param: x: %f y: %f yaw: %f", walking_param_.x_move_amplitude, walking_param_.y_move_amplitude, walking_param_.angle_move_amplitude);
+  ROS_INFO("%f /%f /%f  left_leg_move.x: %f y:%f y:%f", time_, l_ssp_start_time_, l_ssp_end_time_, left_leg_move.x, left_leg_move.y,  left_leg_move.yaw);
+  ROS_INFO("%f /%f /%f right_leg_move.x: %f y:%f y:%f", time_, l_ssp_start_time_, l_ssp_end_time_, right_leg_move.x, right_leg_move.y, right_leg_move.yaw);
+//  ROS_INFO("[%f] /%f /%f swap x: %f y:%f r:%f p:%f", time_, l_ssp_start_time_, l_ssp_end_time_, swap.x, swap.y, swap.roll, swap.pitch);
+
   left_leg_move.roll = 0;
   left_leg_move.pitch = 0;
   right_leg_move.roll = 0;
@@ -814,6 +846,10 @@ bool WalkingModule::computeLegAngle(double *leg_angle)
   ep[9] = swap.roll + left_leg_move.roll + r_offset_ / 2;
   ep[10] = swap.pitch + left_leg_move.pitch + p_offset_;
   ep[11] = swap.yaw + left_leg_move.yaw + a_offset_ / 2;
+
+
+//  ROS_INFO("[time: %f]swap. x:%f y:%f z:%f  r: %f p:%f y:%f", time_, ep[0], ep[1], ep[2], ep[3], ep[4], ep[5]);
+//  ROS_INFO("[time: %f]swap. x:%f y:%f z:%f  r: %f p:%f y:%f", time_, ep[6], ep[7], ep[8], ep[9], ep[10], ep[11]);
 
   // Compute body swing
   if (time_ <= l_ssp_end_time_)
@@ -852,9 +888,9 @@ bool WalkingModule::computeLegAngle(double *leg_angle)
     else if (i == joint_table_["PelvL"])  // L_HIP_ROLL
       offset += op3_kd_->getJointDirection("l_hip_roll") * pelvis_offset_l;
     else if (i == joint_table_["LegUpperR"])
-      offset -= op3_kd_->getJointDirection("r_hip_pitch") * hit_pitch_offset_;
+      offset -= op3_kd_->getJointDirection("r_hip_pitch") * hip_pitch_offset_;
     else if (i == joint_table_["LegUpperL"])  // R_HIP_PITCH or L_HIP_PITCH
-      offset -= op3_kd_->getJointDirection("l_hip_pitch") * hit_pitch_offset_;
+      offset -= op3_kd_->getJointDirection("l_hip_pitch") * hip_pitch_offset_;
 
     leg_angle[i] += offset;
   }
@@ -922,7 +958,7 @@ void WalkingModule::loadWalkingParam(const std::string &path)
     return;
   }
 
-  // parse movement time
+  // parse movement param
   walking_param_.init_x_offset = doc["x_offset"].as<double>();
   walking_param_.init_y_offset = doc["y_offset"].as<double>();
   walking_param_.init_z_offset = doc["z_offset"].as<double>();
@@ -935,10 +971,10 @@ void WalkingModule::loadWalkingParam(const std::string &path)
   walking_param_.dsp_ratio = doc["dsp_ratio"].as<double>();
   walking_param_.step_fb_ratio = doc["step_forward_back_ratio"].as<double>();
   // walking
-  // walking_param_.x_move_amplitude
-  // walking_param_.y_move_amplitude
-  walking_param_.z_move_amplitude = doc["foot_height"].as<double>();
-  // walking_param_.angle_move_amplitude
+  walking_param_.x_move_amplitude = doc["step_length"].as<double>();
+  walking_param_.y_move_amplitude = doc["step_width"].as<double>();
+  walking_param_.z_move_amplitude = doc["step_height"].as<double>();
+  walking_param_.angle_move_amplitude = doc["step_angle"].as<double>();
   // walking_param_.move_aim_on
 
   // balance
@@ -1016,7 +1052,7 @@ void WalkingModule::iniPoseTraGene(double mov_time)
     double ini_value = goal_position_.coeff(0, id);
     double tar_value = target_position_.coeff(0, id);
 //    ROS_INFO("target %s %f", joint_names_[id].c_str(), tar_value);
-    ROS_INFO("%d joint %f %f", id, ini_value, tar_value);
+//    ROS_INFO("%d joint %f %f", id, ini_value, tar_value);
 
     Eigen::MatrixXd tra;
 
@@ -1025,7 +1061,7 @@ void WalkingModule::iniPoseTraGene(double mov_time)
     calc_joint_tra_.block(0, id, all_time_steps, 1) = tra;
   }
 
-  if(DEBUG)
+//  if(DEBUG)
     std::cout << "Generate Trajecotry : " << this->joint_names_.size() <<" " <<mov_time << "s [" << all_time_steps << "]" << std::endl;
 
   init_pose_count_ = 0;

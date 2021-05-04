@@ -106,7 +106,7 @@ void op3_webots_controller::process(){
 
   // -> publish present joint_states & goal joint states topic
   present_joint_state_pub_.publish(present_state);
-  goal_joint_state_pub_.publish(goal_state);
+
 
   is_process_running = false;
   step(time_step_);
@@ -131,9 +131,11 @@ bool op3_webots_controller::writeAllMotors(const sensor_msgs::JointState &joint_
     string joint_name = joint_desired_state.name[joint_index];
 
     double joint_position = joint_desired_state.position[joint_index];
-    ROS_INFO_THROTTLE(1.0,"%s recieved: %f", joint_name.c_str(), joint_position);
+//    ROS_INFO_THROTTLE(1.0,"%s recieved: %f", joint_name.c_str(), joint_position);
     joint_motor_map_[joint_name]->setPosition(joint_position);
   }
+
+  goal_joint_state_pub_.publish(joint_desired_state);
   return true;
 }
 bool op3_webots_controller::writeSingleMotor(const std::string& joint_name, double joint_value){

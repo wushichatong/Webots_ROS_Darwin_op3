@@ -24,6 +24,13 @@
 
 #include "sensor_msgs/JointState.h"
 
+#include "robotis_controller_msgs/StatusMsg.h"
+
+// walking demo
+#include "op3_walking_module_msgs/WalkingParam.h"
+#include "op3_walking_module_msgs/GetWalkingParam.h"
+#include "op3_walking_module_msgs/SetWalkingParam.h"
+
 #include <yaml-cpp/yaml.h>
 #endif
 #include <string>
@@ -44,29 +51,70 @@ namespace op3_webots_gui {
 *****************************************************************************/
 
 class QNode : public QThread {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    QNode(int argc, char** argv );
-    virtual ~QNode();
-    bool init();
-    bool parseJointNameFromYaml(const std::string &path);
-    void sendJointValue(int joint_index, double joint_value);
-    int getJointSize();
-    std::string getJointNameFromIndex(int joint_index);
+  enum LogLevel
+  {
+    Debug = 0,
+    Info = 1,
+    Warn = 2,
+    Error = 3,
+    Fatal = 4
+  };
+  QNode(int argc, char** argv );
+  virtual ~QNode();
+  bool init();
 
-    void run();
+  void run();
+
+  QStringListModel* loggingModel()
+  {
+    return &logging_model_;
+  }
+  void log(const LogLevel &level, const std::string &msg, std::string sender = "Demo");
+  void clearLog();
+
+
+  bool parseJointNameFromYaml(const std::string &path);
+  void sendJointValue(int joint_index, double joint_value);
+  int getJointSize();
+  std::string getJointNameFromIndex(int joint_index);
+  void moveInitPose();
+
+  // Walking
+  void setWalkingCommand(const std::string &command);
+  void refreshWalkingParam();
+  void saveWalkingParam();
+  void applyWalkingParam(const op3_walking_module_msgs::WalkingParam &walking_param);
 
 Q_SIGNALS:
-    void loggingUpdated();
-    void rosShutdown();
+  void loggingUpdated();
+  void rosShutdown();
+
+  // Walking
+  void updateWalkingParameters(op3_walking_module_msgs::WalkingParam params);
 
 private:
-    int init_argc;
-    char** init_argv;
-    std::map<int, std::string> joint_names_;
-    bool debug_;
+  void statusMsgCallback(const robotis_controller_msgs::StatusMsg::ConstPtr &msg);
 
-    ros::Publisher desired_joint_state_pub_;
+  int init_argc;
+  char** init_argv;
+  std::map<int, std::string> joint_names_;
+  bool debug_;
+
+  op3_walking_module_msgs::WalkingParam walking_param_;
+
+  ros::Publisher init_pose_pub_;
+  ros::Publisher desired_joint_state_pub_;
+
+  // Walking
+  ros::Publisher set_walking_command_pub;
+  ros::Publisher set_walking_param_pub;
+  ros::ServiceClient get_walking_param_client_;
+
+  ros::Time start_time_;
+
+  QStringListModel logging_model_;
 
 };
 
