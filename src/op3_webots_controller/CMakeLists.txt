@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   op3_kinematics_dynamics
   robotis_controller_msgs
+  op3_walking_module
   op3_walking_module_msgs
   op3_online_walking_module_msgs
   roslib
@@ -137,12 +138,7 @@ link_directories(
 )
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}
-#  include/motion_module.h
-#  include/sensor_module.h
-#  include/singleton.h
-  src/op3_walking_module.cpp
-)
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -154,7 +150,6 @@ add_library(${PROJECT_NAME}
 ## The recommended prefix ensures that target names across packages don't collide
  add_executable(${PROJECT_NAME}_node
      src/webots.cpp
-     src/op3_walking_module.cpp
      src/op3_webots_controller.cpp)
 
 ## Rename C++ executable without prefix

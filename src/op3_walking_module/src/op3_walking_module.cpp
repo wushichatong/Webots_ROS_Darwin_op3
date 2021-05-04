@@ -548,6 +548,7 @@ void WalkingModule::process(sensor_msgs::JointState& present_joints_state,
   desired_joints_state_.velocity.clear();
   desired_joints_state_.effort.clear();
   desired_joints_state_.header.stamp = ros::Time::now();
+
   // set result
   for (size_t index = 0; index < present_joints_state.name.size(); index++)
   {

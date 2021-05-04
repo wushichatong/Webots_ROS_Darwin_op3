@@ -11,7 +11,7 @@
 
 #include "robotis_controller_msgs/JointCtrlModule.h"
 #include "op3_walking_module/op3_walking_module.h"
-#include "motion_module.h"
+#include "robotis_framework_common/motion_module.h"
 #include "ros/ros.h"
 #include "sensor_msgs/JointState.h"
 #include <ros/package.h>

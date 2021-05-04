@@ -40,7 +40,7 @@
 #include "op3_walking_module_msgs/GetWalkingParam.h"
 #include "op3_walking_module_msgs/SetWalkingParam.h"
 
-#include "motion_module.h"
+#include "robotis_framework_common/motion_module.h"
 #include "robotis_math/robotis_math.h"
 #include "robotis_math/robotis_trajectory_calculator.h"
 #include "op3_kinematics_dynamics/op3_kinematics_dynamics.h"

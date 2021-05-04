@@ -4,6 +4,7 @@ using namespace webots;
 using namespace std;
 namespace robotis_op
 {
+
 op3_webots_controller::op3_webots_controller()
 {
   debug_ = false;
@@ -61,12 +62,14 @@ bool op3_webots_controller::parseJointNameFromYaml(const std::string &path)
 
   return true;
 }
+
 bool op3_webots_controller::startTimer(){
   if(is_timer_running_ == true)
     return false;
   webots_timer_thread_ = boost::thread(boost::bind(&op3_webots_controller::webotsTimerThread, this));
   return true;
 }
+
 void op3_webots_controller::webotsTimerThread(){
   ros::Rate webots_rate(1000 / control_cycle_msec_);
   while(!stop_timer_){
@@ -111,11 +114,11 @@ void op3_webots_controller::process(){
   // -> publish present joint_states & goal joint states topic
   present_joint_state_pub_.publish(present_state);
 
-
   is_process_running = false;
   step(time_step_);
 
 }
+
 bool op3_webots_controller::init(){
   for(size_t joint_index = 1; joint_index <= joint_names_.size(); joint_index++){
     string joint_name = joint_names_[joint_index];
@@ -130,6 +133,7 @@ bool op3_webots_controller::init(){
   step(time_step_);
   return true;
 }
+
 bool op3_webots_controller::writeAllMotors(const sensor_msgs::JointState &joint_desired_state){
   for(size_t joint_index = 0; joint_index < joint_desired_state.name.size(); joint_index++){
     string joint_name = joint_desired_state.name[joint_index];
@@ -142,12 +146,14 @@ bool op3_webots_controller::writeAllMotors(const sensor_msgs::JointState &joint_
   goal_joint_state_pub_.publish(joint_desired_state);
   return true;
 }
+
 bool op3_webots_controller::writeSingleMotor(const std::string& joint_name, double joint_value){
   joint_motor_map_[joint_name]->getMaxPosition();
   joint_motor_map_[joint_name]->getMinPosition();
   joint_motor_map_[joint_name]->setPosition(joint_value);
   return true;
 }
+
 bool op3_webots_controller::readAllMotors(sensor_msgs::JointState& joint_present_state,
                                           sensor_msgs::JointState& joint_target_state){
   for(size_t joint_index = 1; joint_index <= joint_names_.size(); joint_index++){
@@ -169,6 +175,7 @@ bool op3_webots_controller::readAllMotors(sensor_msgs::JointState& joint_present
   }
   return true;
 }
+
 double op3_webots_controller::readSingleMotor(const string& joint_sensor_name){
   return joint_sensor_map_[joint_sensor_name]->getValue();
 }
@@ -178,6 +185,7 @@ void op3_webots_controller::setJointStatesCallback(const sensor_msgs::JointState
 //  ROS_INFO("recieve");
   writeAllMotors(*msg);
 }
+
 void op3_webots_controller::initPoseMsgCallback(const std_msgs::String::ConstPtr& msg){
 
   if (msg->data == "ini_pose")
