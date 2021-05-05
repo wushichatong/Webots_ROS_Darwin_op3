@@ -33,6 +33,21 @@ op3_webots_controller::op3_webots_controller()
 
 }
 
+bool op3_webots_controller::init(){
+  for(size_t joint_index = 1; joint_index <= joint_names_.size(); joint_index++){
+    string joint_name = joint_names_[joint_index];
+    string joint_sensor_name = joint_name + "S";
+    joint_motor_map_[joint_name] = getMotor(joint_name);
+    joint_motor_map_[joint_name]->setPosition(0.0);
+    joint_motor_map_[joint_name]->enableForceFeedback(time_step_);
+    joint_motor_map_[joint_name]->enableTorqueFeedback(time_step_);
+    joint_sensor_map_[joint_sensor_name] = getPositionSensor(joint_sensor_name);
+    joint_sensor_map_[joint_sensor_name]->enable(time_step_);
+  }
+  step(time_step_);
+  return true;
+}
+
 bool op3_webots_controller::parseJointNameFromYaml(const std::string &path)
 {
   YAML::Node doc;
@@ -117,21 +132,6 @@ void op3_webots_controller::process(){
   is_process_running = false;
   step(time_step_);
 
-}
-
-bool op3_webots_controller::init(){
-  for(size_t joint_index = 1; joint_index <= joint_names_.size(); joint_index++){
-    string joint_name = joint_names_[joint_index];
-    string joint_sensor_name = joint_name + "S";
-    joint_motor_map_[joint_name] = getMotor(joint_name);
-    joint_motor_map_[joint_name]->setPosition(0.0);
-    joint_motor_map_[joint_name]->enableForceFeedback(time_step_);
-    joint_motor_map_[joint_name]->enableTorqueFeedback(time_step_);
-    joint_sensor_map_[joint_sensor_name] = getPositionSensor(joint_sensor_name);
-    joint_sensor_map_[joint_sensor_name]->enable(time_step_);
-  }
-  step(time_step_);
-  return true;
 }
 
 bool op3_webots_controller::writeAllMotors(const sensor_msgs::JointState &joint_desired_state){
