@@ -32,7 +32,6 @@ QNode::QNode(int argc, char** argv ) :
   init_argv(argv)
 {
   debug_ = true;
-  init();
 }
 
 QNode::~QNode() {
@@ -46,7 +45,13 @@ QNode::~QNode() {
 bool QNode::init() {
   ros::init(init_argc,init_argv,"op3_webots_gui");
   if ( ! ros::master::check() ) {
-    ROS_INFO("master is not online");
+    ROS_INFO("Master is not online");
+
+    logging_model_.insertRows(logging_model_.rowCount(), 1);
+    QVariant new_row(QString("ROS Master is not online"));
+    logging_model_.setData(logging_model_.index(logging_model_.rowCount() - 1), new_row);
+    Q_EMIT loggingUpdated();  // used to readjust the scrollbar
+
     return false;
   }
   ros::start(); // explicitly needed since our nodehandle is going out of scope.
@@ -57,8 +62,7 @@ bool QNode::init() {
   // Walking
   set_walking_command_pub = ros_node.advertise<std_msgs::String>("/robotis/walking/command", 0);
   set_walking_param_pub = ros_node.advertise<op3_walking_module_msgs::WalkingParam>("/robotis/walking/set_params", 0);
-  get_walking_param_client_ = ros_node.serviceClient<op3_walking_module_msgs::GetWalkingParam>(
-      "/robotis/walking/get_params");
+  get_walking_param_client_ = ros_node.serviceClient<op3_walking_module_msgs::GetWalkingParam>("/robotis/walking/get_params");
 
 
   // Config
@@ -82,7 +86,9 @@ void QNode::run() {
     ++count;
   }
   std::cout << "Ros shutdown, proceeding to close the gui." << std::endl;
+
   Q_EMIT rosShutdown(); // used to signal the gui for a shutdown (useful to roslaunch)
+
 }
 
 bool QNode::parseJointNameFromYaml(const std::string &path)
@@ -144,6 +150,7 @@ void QNode::sendJointValue(int joint_index, double joint_value){
   desired_joint_state.position.push_back(joint_value  * M_PI / 180);
   desired_joint_state.velocity.push_back(0);
   desired_joint_state.effort.push_back(0);
+  //
   desired_joint_state_pub_.publish(desired_joint_state);
 }
 

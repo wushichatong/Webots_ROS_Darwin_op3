@@ -19,3 +19,11 @@ id_joint:
   18 : FootL
   19 : Neck
   20 : Head
+module_list: [none, head_control_module, base_module, walking_module, manipulation_module, action_module, walking_module, direct_control_module, online_walking_module]
+module_button:
+    1 : none
+    2 : head_control_module
+    3 : action_module
+    4 : walking_module
+    5 : online_walking_module
+    6 : direct_control_module

@@ -40,6 +40,8 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
   setWindowTitle("Webots Robotis-OP3 Joint Contorller");
   QObject::connect(&qnode, SIGNAL(rosShutdown()), this, SLOT(close()));
 
+  QObject::connect(&qnode, SIGNAL(rosNoMaster()), this, SLOT(showNoMasterMessage()));
+
   qRegisterMetaType<op3_walking_module_msgs::WalkingParam>("op_walking_params");
   QObject::connect(&qnode, SIGNAL(updateWalkingParameters(op3_walking_module_msgs::WalkingParam)), this,
                    SLOT(updateWalkingParams(op3_walking_module_msgs::WalkingParam)));
@@ -49,6 +51,12 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
    **********************/
   ui.view_logging->setModel(qnode.loggingModel());
   QObject::connect(&qnode, SIGNAL(loggingUpdated()), this, SLOT(updateLoggingView()));
+
+
+  /*********************
+   ** Auto Start
+   **********************/
+  qnode.init();
 
   initJointSliders();
 
@@ -290,6 +298,7 @@ void MainWindow::walkingCommandShortcut()
 *****************************************************************************/
 
 void MainWindow::showNoMasterMessage() {
+  ROS_INFO("Show no massage");
   QMessageBox msgBox;
   msgBox.setText("Couldn't find the ros master.");
   msgBox.exec();

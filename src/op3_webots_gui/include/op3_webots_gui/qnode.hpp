@@ -71,7 +71,7 @@ public:
   {
     return &logging_model_;
   }
-  void log(const LogLevel &level, const std::string &msg, std::string sender = "Demo");
+  void log(const LogLevel &level, const std::string &msg, std::string sender = "Gui");
   void clearLog();
 
 
@@ -90,6 +90,7 @@ public:
 Q_SIGNALS:
   void loggingUpdated();
   void rosShutdown();
+  void rosNoMaster();
 
   // Walking
   void updateWalkingParameters(op3_walking_module_msgs::WalkingParam params);

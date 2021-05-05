@@ -44,9 +44,10 @@ public:
   void WriteSettings(); // Save qt program settings when closing
 
   void closeEvent(QCloseEvent *event); // Overloaded function
-  void showNoMasterMessage();
+
 
 public Q_SLOTS:
+
   /******************************************
   ** Auto-connections (connectSlotsByName())
   *******************************************/
@@ -75,6 +76,8 @@ public Q_SLOTS:
   void walkingCommandShortcut();
 
   void updateLoggingView();
+
+  void showNoMasterMessage();
 
 private:
 
