@@ -82,10 +82,10 @@ public:
   void moveInitPose();
 
   // Walking
-  void setWalkingCommand(const std::string &command);
-  void refreshWalkingParam();
-  void saveWalkingParam();
-  void applyWalkingParam(const op3_walking_module_msgs::WalkingParam &walking_param);
+  bool setWalkingCommand(const std::string &command);
+  bool refreshWalkingParam();
+  bool saveWalkingParam();
+  bool applyWalkingParam(const op3_walking_module_msgs::WalkingParam &walking_param);
 
 Q_SIGNALS:
   void loggingUpdated();

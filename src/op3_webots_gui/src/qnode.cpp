@@ -31,7 +31,7 @@ QNode::QNode(int argc, char** argv ) :
   init_argc(argc),
   init_argv(argv)
 {
-  debug_ = true;
+  debug_ = false;
 }
 
 QNode::~QNode() {
@@ -156,7 +156,7 @@ void QNode::sendJointValue(int joint_index, double joint_value){
 
 
 // Walking
-void QNode::setWalkingCommand(const std::string &command)
+bool QNode::setWalkingCommand(const std::string &command)
 {
   std_msgs::String _commnd_msg;
   _commnd_msg.data = command;
@@ -166,9 +166,10 @@ void QNode::setWalkingCommand(const std::string &command)
   ss_log << "Set Walking Command : " << _commnd_msg.data << std::endl;
 
   log(Info, ss_log.str());
+  return true;
 }
 
-void QNode::refreshWalkingParam()
+bool QNode::refreshWalkingParam()
 {
   op3_walking_module_msgs::GetWalkingParam walking_param_msg;
 
@@ -179,26 +180,31 @@ void QNode::refreshWalkingParam()
     // update ui
     Q_EMIT updateWalkingParameters(walking_param_);
     log(Info, "Get walking parameters");
+    return true;
   }
-  else
+  else{
     log(Error, "Fail to get walking parameters.");
+    return false;
+  }
 }
 
-void QNode::saveWalkingParam()
+bool QNode::saveWalkingParam()
 {
   std_msgs::String command_msg;
   command_msg.data = "save";
   set_walking_command_pub.publish(command_msg);
 
   log(Info, "Save Walking parameters.");
+  return true;
 }
 
-void QNode::applyWalkingParam(const op3_walking_module_msgs::WalkingParam &walking_param)
+bool QNode::applyWalkingParam(const op3_walking_module_msgs::WalkingParam &walking_param)
 {
   walking_param_ = walking_param;
 
   set_walking_param_pub.publish(walking_param_);
   log(Info, "Apply Walking parameters.");
+  return true;
 }
 
 // LOG

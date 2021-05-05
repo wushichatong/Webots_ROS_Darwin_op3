@@ -52,7 +52,12 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
   ui.view_logging->setModel(qnode.loggingModel());
   QObject::connect(&qnode, SIGNAL(loggingUpdated()), this, SLOT(updateLoggingView()));
 
+  //初始化使能
 
+  ui.button_param_apply->setEnabled(false);
+
+  ui.tab_manager->setCurrentIndex(0);
+  ui.tab_walking_module->setEnabled(false);
   /*********************
    ** Auto Start
    **********************/
@@ -100,7 +105,12 @@ void MainWindow::on_button_walking_stop_clicked(bool check)
 void MainWindow::on_button_param_refresh_clicked(bool check)
 {
   ROS_INFO("refresh walking param");
-  qnode.refreshWalkingParam();
+
+  if(qnode.refreshWalkingParam()){
+    ui.button_param_apply->setEnabled(true);
+  }else{
+
+  }
 }
 
 void MainWindow::on_button_param_save_clicked(bool check)
@@ -127,10 +137,15 @@ void MainWindow::initJointSliders(){
     //    std::string joint_name = ix + " ";
     QLabel *id_label = new QLabel(tr(joint_name.c_str()));
 
+    QSpinBox* spinBox = new QSpinBox(ui.widget_joint_control);
+
+    spinBox->setSuffix(" \260");
+    spinBox->setRange(-90, 90);
+    spinBox->setSingleStep(1);
     QSlider *slider = new QSlider(this);
     slider->setOrientation(Qt::Horizontal);  // 水平方向
-    slider->setMinimum(-50);  // 最小值
-    slider->setMaximum(50);  // 最大值
+    slider->setMinimum(-90);  // 最小值
+    slider->setMaximum(90);  // 最大值
     slider->setValue(0);
     slider->setSingleStep(1);  // 步长
     slider->setObjectName(QString("slider %1").arg(ix + 1));
@@ -138,10 +153,20 @@ void MainWindow::initJointSliders(){
     //    connect(pSpinBox, SIGNAL(valueChanged(int)), pSlider, SLOT(setValue(int)));
     signalMapper->setMapping(slider, slider);
     QObject::connect(slider, SIGNAL(valueChanged(int)), signalMapper, SLOT(map()));
-    int num_row = ix / 2 + 1;
+
+    QObject::connect(spinBox, SIGNAL(valueChanged(int)), slider, SLOT(setValue(int)));
+    QObject::connect(slider, SIGNAL(valueChanged(int)), spinBox, SLOT(setValue(int)));
+
+
+    int num_row = (ix / 2) * 2 + 1;
     int num_col = (ix % 2) * 3;
-    grid_layout->addWidget(id_label, num_row, num_col, 1, 1);
-    grid_layout->addWidget(slider, num_row, num_col + 1, 1, 2);
+
+    grid_layout->addWidget(slider, num_row, (ix % 2) + num_col, 1, 3);
+//    ROS_INFO("slider   ix: %d num_row:%d , num_col: %d", ix % 2, num_row, (ix % 2) + num_col);
+    grid_layout->addWidget(id_label, num_row + 1, (ix % 2) + num_col, 1, 1);
+//    ROS_INFO("id_label ix: %d num_row:%d , num_col: %d", ix % 2, num_row  + 1, (ix % 2) + num_col);
+    grid_layout->addWidget(spinBox, num_row + 1, (ix % 2) + num_col + 1, 1, 2);
+//    ROS_INFO("spinBox  ix: %d num_row:%d , num_col: %d", ix % 2, num_row  + 1, (ix % 2) + num_col + 1);
   }
   QObject::connect(signalMapper, SIGNAL(mapped(QWidget *)), this, SLOT(setJointAngle(QWidget *)));
   ui.widget_joint_control->setLayout(grid_layout);
@@ -156,7 +181,7 @@ void MainWindow::setJointAngle(QWidget *widget)
   if(list.size() >= 2){
     int joint_index = list[1].toInt();
     qnode.sendJointValue(joint_index, slider->value());
-    ROS_INFO("send joint [%d] value: %d", joint_index, slider->value());
+//    ROS_INFO("send joint [%d] value: %d", joint_index, slider->value());
   }
 
 }

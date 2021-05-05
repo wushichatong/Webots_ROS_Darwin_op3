@@ -123,15 +123,17 @@ void op3_webots_controller::process(){
   // update all motor states
   readAllMotors(present_state, goal_state);
 
-  motionModule_->process(present_state);
-  writeAllMotors(motionModule_->desired_joints_state_);
+  if(motionModule_->isRunning()){
+    motionModule_->process(present_state);
+    writeAllMotors(motionModule_->desired_joints_state_);
+  }
+
 
   // -> publish present joint_states & goal joint states topic
   present_joint_state_pub_.publish(present_state);
 
   is_process_running = false;
   step(time_step_);
-
 }
 
 bool op3_webots_controller::writeAllMotors(const sensor_msgs::JointState &joint_desired_state){
@@ -182,7 +184,7 @@ double op3_webots_controller::readSingleMotor(const string& joint_sensor_name){
 
 void op3_webots_controller::setJointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg)
 {
-//  ROS_INFO("recieve");
+  ROS_INFO("recieve");
   writeAllMotors(*msg);
 }
 
