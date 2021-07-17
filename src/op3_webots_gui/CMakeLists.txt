@@ -14,7 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
     qt_build
     roscpp
     op3_walking_module_msgs
-    roslib)
+    roslib
+    )
 include_directories(${catkin_INCLUDE_DIRS})
 # Use this to define what the package will export (e.g. libs, headers).
 # Since the default here is to produce only a binary, we don't worry about

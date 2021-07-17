@@ -109,6 +109,7 @@ class WalkingModule : public robotis_framework::MotionModule, public robotis_fra
   /* ROS Topic Callback Functions */
   void walkingCommandCallback(const std_msgs::String::ConstPtr &msg);
   void walkingParameterCallback(const op3_walking_module_msgs::WalkingParam::ConstPtr &msg);
+  void walkingTeleopCallback(const geometry_msgs::Twist::ConstPtr &msg);
   bool getWalkigParameterCallback(op3_walking_module_msgs::GetWalkingParam::Request &req,
                                   op3_walking_module_msgs::GetWalkingParam::Response &res);
 
@@ -120,7 +121,6 @@ class WalkingModule : public robotis_framework::MotionModule, public robotis_fra
 
   void publishStatusMsg(unsigned int type, std::string msg);
   double wSin(double time, double period, double period_shift, double mag, double mag_shift);
-  bool computeIK(double *out, double x, double y, double z, double a, double b, double c);
   void updateTimeParam();
   void updateMovementParam();
   void updatePoseParam();

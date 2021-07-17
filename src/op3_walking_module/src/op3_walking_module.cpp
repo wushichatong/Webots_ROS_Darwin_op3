@@ -32,6 +32,7 @@ WalkingModule::WalkingModule()
   walking_state_ = WalkingReady;
   previous_x_move_amplitude_ = 0.0;
 
+  //op3 逆运动学
   op3_kd_ = new OP3KinematicsDynamics(WholeBody);
 
 }
@@ -43,10 +44,8 @@ WalkingModule::~WalkingModule()
 
 void WalkingModule::initialize(std::map<int, std::string>& joint_names_, const int control_cycle_msec)
 {
-//  // joint table
 
-
-  // joint table
+  // 将Webots关节名对应到相应序号
   joint_table_["r_hip_yaw"] = 0;
   joint_table_["r_hip_roll"] = 1;
   joint_table_["r_hip_pitch"] = 2;
@@ -71,6 +70,7 @@ void WalkingModule::initialize(std::map<int, std::string>& joint_names_, const i
   joint_table_["head_pan"] = 18;
   joint_table_["head_tilt"] = 19;
 
+  // 初始化相关变量
   target_position_ = Eigen::MatrixXd::Zero(1, long(joint_names_.size()));
   goal_position_ = Eigen::MatrixXd::Zero(1, long(joint_names_.size()));
   init_position_ = Eigen::MatrixXd::Zero(1, long(joint_names_.size()));
@@ -171,6 +171,8 @@ void WalkingModule::queueThread()
                                                            &WalkingModule::walkingCommandCallback, this);
   ros::Subscriber walking_param_sub = ros_node.subscribe("/robotis/walking/set_params", 0,
                                                          &WalkingModule::walkingParameterCallback, this);
+  ros::Subscriber walking_teleop_sub = ros_node.subscribe("/cmd_vel", 0,
+                                                         &WalkingModule::walkingTeleopCallback, this);
 
   ros::WallDuration duration(control_cycle_msec_ / 1000.0);
   while(ros_node.ok())
@@ -207,12 +209,19 @@ void WalkingModule::walkingCommandCallback(const std_msgs::String::ConstPtr &msg
   else if (msg->data == "save")
     saveWalkingParam(param_path_);
 }
-
+// 接收UI界面行走参数
 void WalkingModule::walkingParameterCallback(const op3_walking_module_msgs::WalkingParam::ConstPtr &msg)
 {
   walking_param_ = *msg;
 }
-
+// 接受键盘控制参数
+void WalkingModule::walkingTeleopCallback(const geometry_msgs::Twist::ConstPtr &msg)
+{
+  walking_param_.x_move_amplitude = msg->linear.x;
+  walking_param_.y_move_amplitude = msg->linear.y;
+  walking_param_.angle_move_amplitude = msg->angular.z;
+}
+// 更新UI界面行走参数
 bool WalkingModule::getWalkigParameterCallback(op3_walking_module_msgs::GetWalkingParam::Request &req,
                                                op3_walking_module_msgs::GetWalkingParam::Response &res)
 {
@@ -226,90 +235,6 @@ double WalkingModule::wSin(double time, double period, double period_shift, doub
   return mag * sin(2 * M_PI / period * time - period_shift) + mag_shift;
 }
 
-// m, rad
-// for default op3: it was used from previos version(OP2) but it's not using now.
-bool WalkingModule::computeIK(double *out, double pos_x, double pos_y, double pos_z, double ori_roll, double ori_pitch,
-                              double ori_yaw)
-{
-  double thigh_length = 93.0 * 0.001;  //m
-  double calf_length = 93.0 * 0.001;  //m
-  double ankle_length = 33.5 * 0.001;  //m
-  double leg_length = 219.5 * 0.001;  //m (THIGH_LENGTH + CALF_LENGTH + ANKLE_LENGTH)
-
-  Eigen::MatrixXd transformation_ad, transformation_da, transformation_cd, transformation_dc, transformation_ac;
-  Eigen::Vector3d vector;
-  double r_ac, acos_value, atan_value, value_k, value_l, value_m, value_n, value_s, value_c, theta;
-
-  // make transform matrix
-  transformation_ad = robotis_framework::getTransformationXYZRPY(pos_x, pos_y, pos_z, ori_roll, ori_pitch, ori_yaw);
-
-  vector << pos_x + transformation_ad.coeff(0, 2) * ankle_length, pos_y + transformation_ad.coeff(1, 2) * ankle_length, (pos_z
-      - leg_length) + transformation_ad.coeff(2, 2) * ankle_length;
-
-  // Get Knee
-  r_ac = vector.norm();
-  acos_value = acos(
-      (r_ac * r_ac - thigh_length * thigh_length - calf_length * calf_length) / (2 * thigh_length * calf_length));
-  if (std::isnan(acos_value) == 1)
-    return false;
-  *(out + 3) = acos_value;
-
-  // Get Ankle Roll
-  transformation_da = robotis_framework::getInverseTransformation(transformation_ad);
-  double tda_y = transformation_da.coeff(1, 3);
-  double tda_z = transformation_da.coeff(2, 3);
-  value_k = sqrt(tda_y * tda_y + tda_z * tda_z);
-  value_l = sqrt(tda_y * tda_y + (tda_z - ankle_length) * (tda_z - ankle_length));
-  value_m = (value_k * value_k - value_l * value_l - ankle_length * ankle_length) / (2 * value_l * ankle_length);
-  if (value_m > 1.0)
-    value_m = 1.0;
-  else if (value_m < -1.0)
-    value_m = -1.0;
-  acos_value = acos(value_m);
-  if (std::isnan(acos_value) == 1)
-    return false;
-  if (tda_y < 0.0)
-    *(out + 5) = -acos_value;
-  else
-    *(out + 5) = acos_value;
-
-  // Get Hip Yaw
-  transformation_cd = robotis_framework::getTransformationXYZRPY(0.0, 0.0, -ankle_length, *(out + 5), 0.0, 0.0);
-  transformation_dc = robotis_framework::getInverseTransformation(transformation_cd);
-  transformation_ac = transformation_ad * transformation_dc;
-  atan_value = atan2(-transformation_ac.coeff(0, 1), transformation_ac.coeff(1, 1));
-  if (std::isinf(atan_value) == 1)
-    return false;
-  *(out) = atan_value;
-
-  // Get Hip Roll
-  atan_value = atan2(transformation_ac.coeff(2, 1),
-                     -transformation_ac.coeff(0, 1) * sin(*(out)) + transformation_ac.coeff(1, 1) * cos(*(out)));
-  if (std::isinf(atan_value) == 1)
-    return false;
-  *(out + 1) = atan_value;
-
-  // Get Hip Pitch and Ankle Pitch
-  atan_value = atan2(transformation_ac.coeff(0, 2) * cos(*(out)) + transformation_ac.coeff(1, 2) * sin(*(out)),
-                     transformation_ac.coeff(0, 0) * cos(*(out)) + transformation_ac.coeff(1, 0) * sin(*(out)));
-  if (std::isinf(atan_value) == 1)
-    return false;
-  theta = atan_value;
-  value_k = sin(*(out + 3)) * calf_length;
-  value_l = -thigh_length - cos(*(out + 3)) * calf_length;
-  value_m = cos(*(out)) * vector.x() + sin(*(out)) * vector.y();
-  value_n = cos(*(out + 1)) * vector.z() + sin(*(out)) * sin(*(out + 1)) * vector.x()
-      - cos(*(out)) * sin(*(out + 1)) * vector.y();
-  value_s = (value_k * value_n + value_l * value_m) / (value_k * value_k + value_l * value_l);
-  value_c = (value_n - value_k * value_s) / value_l;
-  atan_value = atan2(value_s, value_c);
-  if (std::isinf(atan_value) == 1)
-    return false;
-  *(out + 2) = atan_value;
-  *(out + 4) = theta - *(out + 3) - *(out + 2);
-
-  return true;
-}
 
 void WalkingModule::updateTimeParam()
 {
@@ -346,6 +271,7 @@ void WalkingModule::updateMovementParam()
   x_move_amplitude_ = walking_param_.x_move_amplitude;
   x_swap_amplitude_ = walking_param_.x_move_amplitude * walking_param_.step_fb_ratio;
 
+  //起步时，参数减半
   if (previous_x_move_amplitude_ == 0)
   {
     x_move_amplitude_ *= 0.5;

@@ -81,6 +81,7 @@ void MainWindow::on_button_clear_log_clicked(bool check)
 void MainWindow::on_button_init_pose_clicked(bool check)
 {
   qnode.moveInitPose();
+  ui.tab_walking_module->setEnabled(true);
 }
 
 
