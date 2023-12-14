@@ -13,16 +13,16 @@ sudo apt install ./webots_2021a_amd64.deb
 
 webots
 
-echo "export WEBOTS_HOME=/usr/local/webots" >> ~/.bashrc
+echo "export WEBOTS_HOME=/usr/local/webots" >> ~/.bashrc
 
-source ./bashrc 
+source ~/.bashrc
 ```
 ### 3. webots_ros安装
 
 ``` Bash
 sudo apt install ros-melodic-webots-ros
 ```
- ce
+
 ``` Bash
 roslaunch webots_ros e_puck_line.launch
 ```
