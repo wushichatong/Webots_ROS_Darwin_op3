@@ -12,7 +12,9 @@
 ** Includes
 *****************************************************************************/
 
-#include <QtGui/QMainWindow>
+
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/qshortcut.h>
 #include "ui_main_window.h"
 #include "qnode.hpp"
 

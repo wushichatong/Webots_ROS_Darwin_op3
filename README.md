@@ -6,10 +6,11 @@ Using ROS to control webots Darwin_op3 in Webots
 
 参见http://wiki.ros.org/melodic/Installation/Ubuntu
 
-### 2. Webots(2021a)安装与测试
+### 2. Webots(2023b)安装与测试
+
 
 ``` Bash
-sudo apt install ./webots_2021a_amd64.deb
+sudo apt install ./webots_2023b_amd64.deb
 
 webots
 
@@ -20,7 +21,7 @@ source ~/.bashrc
 ### 3. webots_ros安装
 
 ``` Bash
-sudo apt install ros-melodic-webots-ros
+sudo apt install ros-noetic-webots-ros
 ```
 
 ``` Bash
@@ -29,49 +30,34 @@ roslaunch webots_ros e_puck_line.launch
 ### 4. multiplot安装
 
 ``` Bash
-sudo apt install ros-melodic-rqt-multiplot
+sudo apt install ros-noetic-rqt-multiplot
 ```
-### 5. QtCreator
+### 5. QtCreator(待完善)
+请参考： 
+https://blog.csdn.net/YMGogre/article/details/130588657
 
-下载: https://ros-qtc-plugin.readthedocs.io/en/latest/_source/How-to-Install-Users.html
-
-增加可执行权限：
-``` Bash
-sudo chmod +x *.run
-```
-
-QtCreator中文语言使能
-
-安装fcitx
-
-``` Bash
-cd /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/
-
-cp libfcitxplatforminputcontextplugin.so ~/QtCreator/latest/lib/Qt/plugins/platforminputcontexts/
-
-cd ~/QtCreator/latest/lib/Qt/plugins/platforminputcontexts
-
-sudo chmod +x libfcitxplatforminputcontextplugin.so
-```
 ## ROS工程编译与依赖安装
 
-### 1.工程编译所依赖安装
-``` Bash
-sudo apt-get install ros-melodic-qt-create
-sudo apt-get install ros-melodic-qt-build
-sudo apt-get install qt4-qmake
-sudo apt-get install qt4-default
-sudo apt-get install ros-melodic-teleop-twist-keyboard
-```
 
-### 2.单独编译消息包
+### 1.单独编译消息包
 ``` Bash
 catkin_make -DCATKIN_WHITELIST_PACKAGES="robotis_controller_msgs"
 catkin_make -DCATKIN_WHITELIST_PACKAGES="op3_walking_module_msgs"
 catkin_make -DCATKIN_WHITELIST_PACKAGES=""
 ```
-3.将Webots控制器库文件所在目录添加到环境变量LD_LIBRARY_PATH
 
-``` Bash
-export LD_LIBRARY_PATH=LD_LIBRARY_PATH:/usr/local/webots/lib/controller
+
+## 运行
+
+### 1. 拉起Webots和相应的控制器
+```bash
+roslaunch op3_webots_controller op3_webots_motion.launch 
+```
+
+
+### 2. 拉起控制页面
+
+
+```bash
+rosrun op3_webots_gui op3_webots_gui
 ```

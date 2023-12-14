@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 2.8.0)
 project(op3_gui_demo)
-
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 ##############################################################################
 # Catkin
 ##############################################################################
@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
   std_msgs
+  tf
   sensor_msgs
   geometry_msgs
   visualization_msgs

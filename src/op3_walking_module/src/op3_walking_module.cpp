@@ -46,29 +46,30 @@ void WalkingModule::initialize(std::map<int, std::string>& joint_names_, const i
 {
 
   // 将Webots关节名对应到相应序号
-  joint_table_["r_hip_yaw"] = 0;
-  joint_table_["r_hip_roll"] = 1;
-  joint_table_["r_hip_pitch"] = 2;
-  joint_table_["r_knee"] = 3;
-  joint_table_["r_ank_pitch"] = 4;
-  joint_table_["r_ank_roll"] = 5;
+  // joint table
+  joint_table_["PelvYR"] = 0;
+  joint_table_["PelvR"] = 1;
+  joint_table_["LegUpperR"] = 2;
+  joint_table_["LegLowerR"] = 3;
+  joint_table_["AnkleR"] = 4;
+  joint_table_["FootR"] = 5;
 
-  joint_table_["l_hip_yaw"] = 6;
-  joint_table_["l_hip_roll"] = 7;
-  joint_table_["l_hip_pitch"] = 8;
-  joint_table_["l_knee"] = 9;
-  joint_table_["l_ank_pitch"] = 10;
-  joint_table_["l_ank_roll"] = 11;
+  joint_table_["PelvYL"] = 6;
+  joint_table_["PelvL"] = 7;
+  joint_table_["LegUpperL"] = 8;
+  joint_table_["LegLowerL"] = 9;
+  joint_table_["AnkleL"] = 10;
+  joint_table_["FootL"] = 11;
 
-  joint_table_["r_sho_pitch"] = 12;
-  joint_table_["l_sho_pitch"] = 13;
+  joint_table_["ShoulderR"] = 12;
+  joint_table_["ShoulderL"] = 13;
 
-  joint_table_["r_sho_roll"] = 14;
-  joint_table_["l_sho_roll"] = 15;
-  joint_table_["r_el"] = 16;
-  joint_table_["l_el"] = 17;
-  joint_table_["head_pan"] = 18;
-  joint_table_["head_tilt"] = 19;
+  joint_table_["ArmUpperR"] = 14;
+  joint_table_["ArmUpperL"] = 15;
+  joint_table_["ArmLowerR"] = 16;
+  joint_table_["ArmLowerL"] = 17;
+  joint_table_["Neck"] = 18;
+  joint_table_["Head"] = 19;
 
   // 初始化相关变量
   target_position_ = Eigen::MatrixXd::Zero(1, long(joint_names_.size()));
