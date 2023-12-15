@@ -2,9 +2,9 @@
 Using ROS to control webots Darwin_op3 in Webots
 
 ## 仿真环境配置与插件安装
-### 1. ROS(melodic)安装
+### 1. ROS(noetic)安装
 
-参见http://wiki.ros.org/melodic/Installation/Ubuntu
+参见http://wiki.ros.org/noetic/Installation/Ubuntu
 
 ### 2. Webots(2023b)安装与测试
 
