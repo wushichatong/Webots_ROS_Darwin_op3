@@ -33,8 +33,15 @@ roslaunch webots_ros e_puck_line.launch
 sudo apt install ros-noetic-rqt-multiplot
 ```
 ### 5. QtCreator(待完善)
+#### 方案1
 请参考： 
 https://blog.csdn.net/YMGogre/article/details/130588657
+
+#### 方案2
+也可以直接通过snap安装qtcreator-ros
+```
+sudo snap install qtcreator-ros --classic
+```
 
 ## ROS工程编译与依赖安装
 
